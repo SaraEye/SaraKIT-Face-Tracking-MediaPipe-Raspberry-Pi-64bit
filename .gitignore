@@ -1,0 +1,7 @@
+.vscode/*.*
+.obj/*.*
+.dep/*.*
+*.csv
+*.o
+*.d
+FaceTracking
