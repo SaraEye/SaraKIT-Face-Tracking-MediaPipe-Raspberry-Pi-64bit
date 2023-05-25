@@ -8,7 +8,7 @@ By utilizing quiet, precise, and fast BLDC Gimbal motors, the camera can smoothl
 
 To utilize SaraKIT for face analysis, follow these steps:
 
-1. Install OpenCV (https://github.com/SaraEye/Install-OpenCV-Bazel-MediaPipe-Raspberry-Pi-64-bits)
+1. Install OpenCV & Mediapipe (https://github.com/SaraEye/Install-OpenCV-Bazel-MediaPipe-Raspberry-Pi-64-bits)
 2. Compile the code by running the command `make`.
 3. Execute the program using `./FaceTracking`.
 4. The program captures frames from the camera, processes them, and sends the output.
