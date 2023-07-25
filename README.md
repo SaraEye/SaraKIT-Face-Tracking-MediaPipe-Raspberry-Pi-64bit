@@ -2,9 +2,9 @@
 
 SaraKIT is an easy-to-use face analysis solution for Raspberry Pi 4 CM4, powered by state-of-the-art algorithms based on MediaPipe from Google. It provides robust functionality for face detection, face landmark detection, and face mesh processing, specifically optimized for the Raspberry Pi 64-bit platform.
 
-"Discover the Power of SaraKIT's Pan-Tilt Camera with Advanced Face Detection and Tracking!" Our pan tilt camera system, based on the SaraKIT platform, offers excellent face detection capabilities and the ability to track facial movements.
-By utilizing quiet, precise, and fast BLDC Gimbal motors, the camera can smoothly move in response to facial motions, ensuring precise and accurate tracking. This innovative solution represents another way to leverage SaraKIT in projects related to artificial intelligence and home automation. It enables integration with AI systems and home automation, opening up new possibilities for monitoring, facial recognition, and real-time interaction.
+**Discover the Power of SaraKIT's Pan-Tilt Camera with Advanced Face Detection and Tracking!** Our pan tilt camera system, based on the SaraKIT platform, offers excellent face detection capabilities and the ability to track facial movements. By utilizing quiet, precise, and fast BLDC Gimbal motors, the camera can smoothly move in response to facial motions, ensuring precise and accurate tracking. This innovative solution represents another way to leverage SaraKIT in projects related to artificial intelligence and home automation. It enables integration with AI systems and home automation, opening up new possibilities for monitoring, facial recognition, and real-time interaction.
 
+## Getting Started
 
 To utilize SaraKIT for face analysis, follow these steps:
 
@@ -18,3 +18,5 @@ To utilize SaraKIT for face analysis, follow these steps:
 Both the standard Raspberry Pi MMAL functions and OpenCV functions can be used to capture frames from the camera.
 
 For instructions on how to install MediaPipe on Raspberry Pi, please refer to our separate repository dedicated to this topic.
+
+https://SaraKIT.SaraAI.com
