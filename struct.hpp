@@ -16,21 +16,19 @@
 
 #include "lib/camera/RaspiCamCV.hpp"
 
-const int camwidth = 640;
-const int camheight = 480;
-const int cam1width = 640;
-const int cam1height = 480;
+extern int camwidth;
+extern int camheight;
 
-const bool useWebserver = true;  // show window on http://ip:7777 
-const bool showGUI = false;  // show window 
-const bool cambuffered = true;    // false=wait to frame, frame by frame; true get last grabed frame (more CPU)
-const bool camFile = false;       // frames from file video.mp4 - if camfile then camOpenCV=true
-const bool camOpenCV = false;
+extern bool useWebserver;	// show window on http://raspberrypi:7777
+extern bool showGUI;		// show window 
+extern bool cambuffered;	// false=wait to frame, frame by frame; true get last grabed frame (more CPU)
+extern bool camFile;		// frames from file video.mp4 - if camfile then camOpenCV=true
+extern bool camOpenCV;
 
-extern cv::Mat frame,   frameGray,   frameGrayHalf,      frameGrayHalfEdge;  //cam0
-extern cv::Mat frame1,  frame1Gray,  frame1GrayHalf,     frame1GrayHalfEdge; //cam1
+extern cv::Mat frame0, frame0Gray, frame0GrayHalf, frame0GrayHalfEdge; //cam0
+extern cv::Mat frame1, frame1Gray, frame1GrayHalf, frame1GrayHalfEdge; //cam1
 extern cv::Mat frameBig, imgPreview, imgPreview1, imgWindow, imgcopy0, imgcopy1;
-extern cv::Mat imgORG, imgEdge;
+extern cv::Mat imgORG, imgProcessed;
 
 //extern Type::Frame edgesFrame;
 extern cv::VideoCapture capcv0, capcv1;
@@ -41,7 +39,7 @@ extern int file_slider_max;
 extern int file_slider;
 extern int threshold_slider;
 static int64 tick, tick2;
-extern float previewSize;
+extern float scaleView;
 extern bool TwoWindow;
 
 extern int ModeView1;
@@ -56,18 +54,23 @@ extern cv::Point lastMotion;
 extern int lastMotionframes;
 
 namespace KeyboardKey {
-const char BACKSPACE = 8;
-const char ENTER = 13;
-const char ESC = 27;
-const char SPACE = 32;
+    const char BACKSPACE = 8;
+    const char ENTER = 13;
+    const char ESC = 27;
+    const char SPACE = 32;
 }  // namespace KeyboardKey
+
+namespace ViewMode {
+    const int Camera0 = 0;
+    const int Camera1 = 1;
+    const int Processed = 2;
+    const int notVisible = -1;
+} 
 
 extern bool control_c;
 
 extern float timeSum;
 extern int timeIdx;
-
-extern float angle_scale;
 
 const cv::Scalar redScalar = cv::Scalar(0, 0, 255);
 const cv::Scalar greenScalar = cv::Scalar(0, 255, 0);
@@ -77,8 +80,8 @@ const cv::Scalar yellowScalar = cv::Scalar(0, 255, 255);
 const cv::Scalar cyanScalar = cv::Scalar(255, 255, 0);
 const cv::Scalar blackScalar = cv::Scalar(0, 0, 0);
 
-extern void sleepms(int ms);
-
 extern bool tick2on;
+
+extern float angle_scale;
 
 #endif  // _STRUCT_H_

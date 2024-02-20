@@ -1,6 +1,3 @@
-#ifndef _DEVICES_H_
-#define _DEVICES_H_
-
 #include <numeric>
 
 typedef unsigned char uchar;
@@ -53,6 +50,7 @@ struct GetInfoResult {
 #define DEG_TO_RAD  (_PI / 180)
 #define RAD_TO_DEG  (180.0 / _PI)
 
+extern "C" {
 void sleepms(int ms);
 void sendCommandSet(uchar *buffer);
 void sendCommandGet(uchar *buffer, int len);
@@ -83,13 +81,12 @@ void BLDCMotor_On(uchar motorId, bool enable);
 void BLDCMotor_IdleTorque(uchar motorId, uchar torque, unsigned short torqueMs);
 void BLDCMotor_PIDAngle(uchar motorId, float P, float I, float D, float ramp);
 void BLDCMotor_PIDVelocity(uchar motorId, float P, float I, float D, float ramp);
-initFOC BLDCMotor_InitFOC(uchar motorId, uchar encoderId, char direction, float angle);
+initFOC BLDCMotor_InitFOC(uchar motorId, uchar encoderId, int direction, float angle);
 void BLDCMotor_MoveToAngle(uchar motorId, float angle, float speed, uchar torque, bool degrees);
 void BLDCMotor_MoveByAngle(uchar motorId, float angle, float speed, uchar torque, bool degrees);
 void BLDCMotor_DriveMeters(uchar motorId, float centimeters, float speed, uchar torque, float WhellDiameter);
-void BLDCMotor_MoveContinuousTorque(uchar motorId, int8_t direction, uchar torque);
-void BLDCMotor_MoveContinuousVelocity(uchar motorId, int8_t direction, uchar torque, float speed, bool degrees);
+void BLDCMotor_MoveContinuousTorque(uchar motorId, int direction, uchar torque);
+void BLDCMotor_MoveContinuousVelocity(uchar motorId, int direction, uchar torque, float speed, bool degrees);
 void BLDCMotor_MoveStop(uchar motorId);
 GetInfoResult BLDCMotor_GetInfo(uchar motorId, uchar info, bool zprint);
-
-#endif // _DEVICES_H_
+}

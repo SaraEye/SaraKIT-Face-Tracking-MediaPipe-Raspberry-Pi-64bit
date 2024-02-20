@@ -15,23 +15,33 @@ void hconcat(const cv::Mat* src1, cv::Mat* src2, cv::Mat* dst) {
     }
 }
 
-void init_viewer() {
-    frame = cv::Mat(camheight, camwidth, CV_8UC3);
-    frameGray = cv::Mat(camheight, camwidth, CV_8UC1);
-    frameGrayHalf = cv::Mat(camheight/2, camwidth/2, CV_8UC1);
-    frameGrayHalfEdge = cv::Mat(camheight/2, camwidth/2, CV_8UC1);
+void init_viewer(int firstViewMode, int secondViewMode, float ScaleView, bool ShowGUI, bool ShowOnWWW) {
+	ModeView1=firstViewMode;
+	ModeView2=secondViewMode;
+	TwoWindow=false;
+	if (secondViewMode>-1) {
+		TwoWindow=true;
+	}
+	showGUI=ShowGUI;
+	scaleView=ScaleView;
+	useWebserver=ShowOnWWW;
+	
+    frame0 = cv::Mat(camheight, camwidth, CV_8UC3);
+    frame0Gray = cv::Mat(camheight, camwidth, CV_8UC1);
+    frame0GrayHalf = cv::Mat(camheight/2, camwidth/2, CV_8UC1);
+    frame0GrayHalfEdge = cv::Mat(camheight/2, camwidth/2, CV_8UC1);
 
-    frame1 = cv::Mat(cam1height/2, cam1width/2, CV_8UC3);
-    frame1Gray = cv::Mat(cam1height, cam1width, CV_8UC1);
-    frame1GrayHalf = cv::Mat(cam1height/2, cam1width/2, CV_8UC1);
+    frame1 = cv::Mat(camheight, camwidth, CV_8UC3);
+    frame1Gray = cv::Mat(camheight, camwidth, CV_8UC1);
+    frame1GrayHalf = cv::Mat(camheight/2, camwidth/2, CV_8UC1);
 
     imgcopy0 = cv::Mat(camheight, camwidth, CV_8UC3);
     imgcopy1 = cv::Mat(camheight, camwidth, CV_8UC3);
 
-    imgPreview = cv::Mat(camheight * previewSize, camwidth * previewSize, CV_8UC3);
-    imgPreview1 = cv::Mat(camheight * previewSize, camwidth * previewSize, CV_8UC3);
+    imgPreview = cv::Mat(camheight * scaleView, camwidth * scaleView, CV_8UC3);
+    imgPreview1 = cv::Mat(camheight * scaleView, camwidth * scaleView, CV_8UC3);
 
-    imgWindow = cv::Mat(camheight, camwidth * previewSize, CV_8UC3);
+    imgWindow = cv::Mat(camheight * scaleView, camwidth * scaleView, CV_8UC3);
     if (showGUI) {
         cv::namedWindow(window_name, cv::WINDOW_AUTOSIZE);
         cv::moveWindow(window_name, 0, 0);
@@ -73,8 +83,8 @@ ViewerStatus viewer_refresh() {
             return ViewerStatus::Exit;
         }
         case KeyboardKey::SPACE: {
-            memcpy(imgcopy0.data, frame.data, camwidth * camheight * 3);
-            memcpy(imgcopy1.data, frame1.data, cam1width * cam1height * 3);
+            memcpy(imgcopy0.data, frame0.data, camwidth * camheight * 3);
+            memcpy(imgcopy1.data, frame1.data, camwidth * camheight * 3);
             return ViewerStatus::Pause;
         }
 
@@ -88,22 +98,23 @@ ViewerStatus viewer_refresh() {
 
     if (ModeView1 == 0) {
         if (viewStatus==ViewerStatus::Depth)
-            resize(imgORG, imgPreview, cv::Size(), previewSize, previewSize, cv::INTER_LINEAR);
+            resize(imgORG, imgPreview, cv::Size(), scaleView, scaleView, cv::INTER_LINEAR);
         else
-            resize(frame, imgPreview, cv::Size(), previewSize, previewSize, cv::INTER_LINEAR);
+            resize(frame0, imgPreview, cv::Size(), scaleView, scaleView, cv::INTER_LINEAR);
     } else if (ModeView1 == 1) {
-        cv::resize(frame1, imgPreview, cv::Size(), 1.0f * imgPreview1.cols / frame1.cols, 1.0f * imgPreview1.rows / frame1.rows, cv::INTER_LINEAR);
+        //cv::resize(frame1, imgPreview, cv::Size(), 1.0f * imgPreview1.cols / frame1.cols, 1.0f * imgPreview1.rows / frame1.rows, cv::INTER_LINEAR);
+        cv::resize(frame1, imgPreview, cv::Size(), scaleView, scaleView, cv::INTER_LINEAR);
     } else if (ModeView1 == 2) {
-        cv::resize(imgEdge, imgPreview, cv::Size(), previewSize * camwidth / imgEdge.cols, previewSize * camheight / imgEdge.rows, cv::INTER_LINEAR);
+        cv::resize(imgProcessed, imgPreview, cv::Size(), scaleView * camwidth / imgProcessed.cols, scaleView * camheight / imgProcessed.rows, cv::INTER_LINEAR);
     }
 
     if (TwoWindow) {
         if (ModeView2 == 0) {
-            cv::resize(frame1, imgPreview1, cv::Size(), 1.0f * imgPreview1.cols / frame1.cols, 1.0f * imgPreview1.rows / frame1.rows, cv::INTER_LINEAR);
+            cv::resize(frame0, imgPreview1, cv::Size(), scaleView, scaleView, cv::INTER_LINEAR);
         } else if (ModeView2 == 1) {
-            cv::resize(frame, imgPreview1, cv::Size(), previewSize, previewSize, cv::INTER_LINEAR);
+            cv::resize(frame1, imgPreview1, cv::Size(), scaleView, scaleView, cv::INTER_LINEAR);
         } else if (ModeView2 == 2) {
-            cv::resize(imgEdge, imgPreview1, cv::Size(), previewSize * camwidth / imgEdge.cols, previewSize * camheight / imgEdge.rows, cv::INTER_LINEAR);
+            cv::resize(imgProcessed, imgPreview1, cv::Size(), scaleView * camwidth / imgProcessed.cols, scaleView * camheight / imgProcessed.rows, cv::INTER_LINEAR);
         }
         cv::hconcat(imgPreview, imgPreview1, imgWindow);
     } else
@@ -142,8 +153,8 @@ ViewerStatus viewer_refresh() {
     }
 
     float fontsize = 1.4;
-    if (frame.cols<640) fontsize = fontsize / 2.0;
-    if (frame.cols>640) fontsize = fontsize * 2.0;
+    if (frame0.cols<640) fontsize = fontsize / 2.0;
+    if (frame0.cols>640) fontsize = fontsize * 2.0;
 
     //cv::putText(imgWindow, cv::format("FPS:%4.1fms (%4.1f) avg:%4.0fms max:%4.0fms", ffmin, 1000/ffmin, favg, ffmax), cv::Point(10, 35), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0, 255, 0));
     cv::putText(imgWindow, cv::format("FPS: %4.1f (%4.1fms)", 1000/ffmin, ffmin), cv::Point(10, 35*fontsize), cv::FONT_HERSHEY_SIMPLEX, fontsize, cv::Scalar(0, 255, 0));

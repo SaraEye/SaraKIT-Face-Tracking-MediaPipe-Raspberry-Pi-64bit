@@ -547,6 +547,7 @@ cv::Mat raspiCamCvQueryFrame(RaspiCamCvCapture *capture) {
 }
 
 int init_camera(int camnum, int width, int height, bool gray, bool camcv, bool buffered, int hflip, int vflip) {
+    camOpenCV=camcv;
     if (camnum == -1) {
         capcv0.open("video.mp4");
         return 0;
@@ -609,38 +610,37 @@ int init_camera(int camnum, int width, int height, bool gray, bool camcv, bool b
     return 0;
 }
 
-int GetFrameFile(cv::Mat &frame, cv::Mat &frame1) {
+int GetFrameFile(cv::Mat &frame0, cv::Mat &frame1) {
     cv::Mat fr;
     capcv0.read(fr);
-    frame = fr(cv::Rect(0, 0, 640, 480));
+    frame0 = fr(cv::Rect(0, 0, 640, 480));
     frame1 = fr(cv::Rect(640, 0, 640, 480));
     return 0;
 }
 
-int GetFrameCam0(cv::Mat &frame, cv::Mat &frameGray, cv::Mat &frameGrayHalf, cv::Mat &frameGrayHalfEdge) {
+int GetFrameCam0(cv::Mat &frame0, cv::Mat &frame0Gray, cv::Mat &frame0GrayHalf, cv::Mat &frame0GrayHalfEdge) {
     // RaspiVid
-    frame = caprp0->pState->dstImage;
-    frameGray = caprp0->pState->dstImageGray;
-    frameGrayHalf = caprp0->pState->dstImageGrayHalf;
-    frameGrayHalfEdge = caprp0->pState->dstImageGrayHalfEdge;
+    frame0 = caprp0->pState->dstImage;
+    frame0Gray = caprp0->pState->dstImageGray;
+    frame0GrayHalf = caprp0->pState->dstImageGrayHalf;
+    frame0GrayHalfEdge = caprp0->pState->dstImageGrayHalfEdge;
     int fr=caprp0->pState->newframe;
     caprp0->pState->newframe=0;
     return fr;
 }
 
-int GetFrameCam1(cv::Mat &frame, cv::Mat &frameGray, cv::Mat &frameGrayHalf) {
+int GetFrameCam1(cv::Mat &frame1, cv::Mat &frame1Gray, cv::Mat &frame1GrayHalf) {
     // RaspiVid
-    frame = caprp1->pState->dstImage;
-    frameGray = caprp1->pState->dstImageGray;
-    frameGrayHalf = caprp1->pState->dstImageGrayHalf;
-    frameGrayHalfEdge = caprp1->pState->dstImageGrayHalfEdge;
+    frame1 = caprp1->pState->dstImage;
+    frame1Gray = caprp1->pState->dstImageGray;
+    frame1GrayHalf = caprp1->pState->dstImageGrayHalf;
+    frame1GrayHalfEdge = caprp1->pState->dstImageGrayHalfEdge;
     int fr=caprp1->pState->newframe;
     caprp1->pState->newframe=0;
     return fr;
 }
 
-//cam=0 (form cam 0); cam=1 (from cam 1); cam=2 (from cam 0 and 1)
-int GetFrame(int cam)
+int GetFrame()
 {
     int res=0;
     if (viewStatus == ViewerStatus::Pause)
@@ -653,13 +653,13 @@ int GetFrame(int cam)
         if (camFile)
         {
             capcv0.set(cv::CAP_PROP_POS_FRAMES, cv::getTrackbarPos("Position", window_name));
-            GetFrameFile(frame, frame1);
-            memcpy(imgcopy0.data, frame.data, camwidth * camheight * 3);
-            memcpy(imgcopy1.data, frame1.data, cam1width * cam1height * 3);
+            GetFrameFile(frame0, frame1);
+            memcpy(imgcopy0.data, frame0.data, camwidth * camheight * 3);
+            memcpy(imgcopy1.data, frame1.data, camwidth * camheight * 3);
         }
         else
         {
-            frame = imgcopy0.clone();
+            frame0 = imgcopy0.clone();
             frame1 = imgcopy1.clone();
         }
         res=1;
@@ -668,35 +668,31 @@ int GetFrame(int cam)
     {
         if (camFile)
         {
-            GetFrameFile(frame, frame1);
+            GetFrameFile(frame0, frame1);
             cv::setTrackbarPos("Position", window_name, int(capcv0.get(cv::CAP_PROP_POS_FRAMES)));
             res=1;
         }
         else
         {
             if (camOpenCV) {
-                if (cam==0||cam==2){
-                    capcv0.read(frame);
-                    //todo opencv flip
-                    //if ()
-                    //    cv::flip(frame,frame, 0);
+                if (capcv0.isOpened()) {
+                    capcv0.read(frame0);
+                    //todo 
+                    //cv::flip(frame,frame, 0);
                     res=1;
                 }
-                else
-                if (cam==1){
+                if (capcv1.isOpened()) {
                     capcv1.read(frame1);
                     res=res|2;
                 }
                 return res;
+            } else {
+                if (caprp0 != nullptr) 
+                    res=GetFrameCam0(frame0,frame0Gray,frame0GrayHalf,frame0GrayHalfEdge);
+                
+                if (caprp1 != nullptr)
+                    res=res|(GetFrameCam1(frame1,frame1Gray,frame1GrayHalf)<<1);
             }
-            if (cam==0||cam==2)
-                res=GetFrameCam0(frame,frameGray,frameGrayHalf,frameGrayHalfEdge);
-            else
-            if (cam==1)
-                res=GetFrameCam1(frame,frameGray,frameGrayHalf);
-
-            if (cam==2)
-                res=res|GetFrameCam1(frame1,frame1Gray,frame1GrayHalf)<<1;
         }
     }
     return res;

@@ -38,7 +38,7 @@ cv::Mat raspiCamCvQueryFrame(RaspiCamCvCapture * capture);
 int init_camera(int camnum, int width, int height, bool gray, bool camcv, bool buffered, int hflip, int vflip);
 
 int GetFrameFile(cv::Mat &frame,cv::Mat &framewide);
-int GetFrame(int cam);
+int GetFrame();
 
 int GetFrameCam0(cv::Mat &frame, cv::Mat &frameGray, cv::Mat &frameGrayHalf, cv::Mat &frameGrayHalfEdge);
 int GetFrameCam1(cv::Mat &frame, cv::Mat &frameGray, cv::Mat &frameGrayHalf);

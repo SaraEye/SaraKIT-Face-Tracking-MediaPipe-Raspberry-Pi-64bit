@@ -45,7 +45,6 @@ LIBS =-lpthread \
 	-lmmal_vc_client \
 	-lvcos \
 	-lmediapipe	\
-	-lwiringPi \
 	-lcrypt
 
 SLIBS=

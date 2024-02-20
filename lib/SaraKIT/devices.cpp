@@ -10,7 +10,6 @@
 #include <linux/spi/spidev.h>
 
 #include "devices.hpp"
-#include <wiringPi.h>
 
 //BLDC GIMBAL MOTORS
 int motorDriverPin = 17;
@@ -331,7 +330,7 @@ InfoEncoders Encoder_Get(uchar EncoderId){
 	return result;
 }    
 
-InfoEncoders EncoderGetParam(uchar EncoderId){
+InfoEncoders Encoder_GetParam(uchar EncoderId){
     uchar command=13;
     uchar testbyte=0xf1;
     uchar cmd[16] = {command,EncoderId,0,0,0,0,0,testbyte,0,0,0,0,0,0,0,0};
@@ -340,7 +339,7 @@ InfoEncoders EncoderGetParam(uchar EncoderId){
     InfoEncoders result;
     
     result.zeroAngle=getFloat(cmd,4);
-    result.direction=getInt16(cmd,8);
+    result.direction=(int16_t)getInt16(cmd,8);
     //printf("\rzeroAngle:%f direction:%d    ", result.zeroAngle, result.direction);
 	return result;
 }    
@@ -434,7 +433,7 @@ void BLDCMotor_PIDVelocity(uchar motorId, float P, float I, float D, float ramp)
 }
 
 //encoder port 0 or 1, direction -1 or 0 or 1  =0-set FOC ; return angle zero + direction
-initFOC BLDCMotor_InitFOC(uchar motorId, uchar encoderId, char direction, float angle){
+initFOC BLDCMotor_InitFOC(uchar motorId, uchar encoderId, int direction, float angle){
     initFOC initFoc;
     initFoc.ready=false;
     if (motorId>1) {
@@ -444,7 +443,8 @@ initFOC BLDCMotor_InitFOC(uchar motorId, uchar encoderId, char direction, float 
 
     uchar command=50;
     uchar testbyte=0xf1;
-    uchar cmd[16] = {command,motorId,0,encoderId,0,direction,0,0,0,0,0,0,0,0,0,testbyte};
+	char dir=(char)direction;
+    uchar cmd[16] = {command,motorId,0,encoderId,0,dir,0,0,0,0,0,0,0,0,0,testbyte};
     memcpy(&cmd[6], &angle, 4);
     sendCommandSet(cmd);
     if (direction==0) {
@@ -452,7 +452,7 @@ initFOC BLDCMotor_InitFOC(uchar motorId, uchar encoderId, char direction, float 
         InfoEncoders za;
         int ms=0;    
         while (ms<10000) {
-            za=EncoderGetParam(encoderId);
+            za=Encoder_GetParam(encoderId);
             if (za.zeroAngle==-999.0f || za.zeroAngle==0.0f)
                 sleepms(1);
             else
@@ -523,7 +523,7 @@ void BLDCMotor_DriveMeters(uchar motorId, float centimeters, float speed, uchar 
 }
 
 //motorId 0-4; direction -1,1; torque 0..100;
-void BLDCMotor_MoveContinuousTorque(uchar motorId, int8_t direction, uchar torque){
+void BLDCMotor_MoveContinuousTorque(uchar motorId, int direction, uchar torque){
     if (motorId>3) {
         printf("invalid MotorID value (0..3)\n");
         return;
@@ -532,8 +532,8 @@ void BLDCMotor_MoveContinuousTorque(uchar motorId, int8_t direction, uchar torqu
         printf("invalid direction value (-1,1)\n");
         return;
     }
-    if (torque<-100 || torque>100) {
-        printf("invalid torque value (-100..100)\n");
+    if (torque<0 || torque>100) {
+        printf("invalid torque value (0..100)\n");
         return;
     }
     char dir=(char)direction;
@@ -544,7 +544,7 @@ void BLDCMotor_MoveContinuousTorque(uchar motorId, int8_t direction, uchar torqu
 }
 
 //motorId 0-1; direction 0..1; speed 0.01..1000;
-void BLDCMotor_MoveContinuousVelocity(uchar motorId, int8_t direction, uchar torque, float speed, bool degrees=false){
+void BLDCMotor_MoveContinuousVelocity(uchar motorId, int direction, uchar torque, float speed, bool degrees=false){
     if (motorId>3) {
         printf("invalid MotorID value (0..1)\n");
         return;
@@ -553,8 +553,8 @@ void BLDCMotor_MoveContinuousVelocity(uchar motorId, int8_t direction, uchar tor
         printf("invalid direction value (-1,1)\n");
         return;
     }
-    if (torque<-100 || torque>100) {
-        printf("invalid torque value (-100..100)\n");
+    if (torque<0 || torque>100) {
+        printf("invalid torque value (0..100)\n");
         return;
     }
     if (speed<0 or speed>1000) {
