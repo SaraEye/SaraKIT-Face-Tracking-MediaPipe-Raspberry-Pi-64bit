@@ -17,7 +17,7 @@ if you have the Linux Desktop version and want to display the image from the cam
 init_viewer(ViewMode::Camera0,ViewMode::Processed, 1, true, false);
 6. The browser preview displays one or two images side by side, where the content of each image can be customized. By default, the left image shows the camera preview, while the right image displays the detected face along with face landmarks. Refer to the video below for a similar visualization.
 
-Both the standard Raspberry Pi MMAL functions and OpenCV functions can be used to capture frames from the camera.
+Both the standard Raspberry Pi MMAL functions and OpenCV functions (slightly slower) can be used to capture frames from the camera.
 
 For instructions on how to install MediaPipe on Raspberry Pi, please refer to our separate repository dedicated to this topic.
 
